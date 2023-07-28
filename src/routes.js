@@ -8,11 +8,11 @@ export const AppRouter = () => {
       element: <AuthTabs />,
     },
     {
-      path: '/forgot-pwd',
+      path: '/forgot-password',
       element: <ForgotPwd />,
     },
     {
-      path: '/reset-pwd',
+      path: '/reset-password',
       element: <ResetPwd />,
     },
   ]);

@@ -1,47 +1,102 @@
-import '../login/Login.scss';
+import '../register/Register.scss';
 import Button from '../../../components/button/Button';
 import Input from '../../../components/input/Input';
+import { useEffect, useState } from 'react';
+import { Utils } from '../../../services/utils/utils.service';
+import { authService } from '../../../services/api/auth/auth.service';
 
 const Register = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoding] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [alertType, setAlertType] = useState('');
+  const [hasError, setHasError] = useState('');
+  const [user, setUser] = useState('');
+
+  const registerUser = async (event) => {
+    setLoding(true);
+    event.preventDefault();
+    try {
+      const avatarColor = Utils.avatarColor();
+      const avatarImage = Utils.generateAvatar(username.charAt(0), avatarColor);
+      const result = await authService.signUp({
+        username,
+        password,
+        email,
+        avatarColor,
+        avatarImage,
+      });
+      setUser(result.data.user);
+      setHasError(false);
+      setAlertType('alert-success');
+    } catch (error) {
+      setHasError(true);
+      setAlertType('alert-error');
+      setLoding(false);
+      setErrorMessage(error.response.data.message);
+    }
+  };
+
+  useEffect(() => {
+    if (loading && !user) return;
+    if (user) {
+      console.log('navigate to streams page');
+      setLoding(false);
+    }
+  }, [loading, user]);
+
   return (
     <div className="auth-inner">
-      {/* <div className="alerts" role="alert">
-        Error message
-      </div> */}
-      <form className="auth-form">
+      {errorMessage && hasError && (
+        <div className={`alerts ${alertType}`} role="alert">
+          ${errorMessage}
+        </div>
+      )}
+      <form className="auth-form" onSubmit={registerUser}>
         <div className="form-input-container">
           <Input
             id="username"
             name="username"
             type="text"
-            value="username"
+            value={username}
             labelText="Username"
             placeholder="Enter Username"
-            handleChange={() => {}}
+            style={{ border: `${hasError ? '1px solid red' : ''}` }}
+            handleChange={(event) => {
+              setUsername(event.target.value);
+            }}
           />
           <Input
             id="email"
             name="email"
             type="text"
-            value="test@test.com"
+            value={email}
             labelText="email"
             placeholder="Enter Email"
-            handleChange={() => {}}
+            style={{ border: `${hasError ? '1px solid red' : ''}` }}
+            handleChange={(event) => {
+              setEmail(event.target.value);
+            }}
           />
           <Input
             id="password"
             name="password"
             type="text"
-            value="pwd"
+            value={password}
             labelText="Password"
             placeholder="Enter Password"
-            handleChange={() => {}}
+            style={{ border: `${hasError ? '1px solid red' : ''}` }}
+            handleChange={(event) => {
+              setPassword(event.target.value);
+            }}
           />
         </div>
         <Button
-          label={'Register'}
+          label={`${loading ? 'SIGNUP IN PROGRESS...' : 'SIGNUP'}`}
           className="auth-button button"
-          disabled={true}
+          disabled={!username || !email || !password}
         />
       </form>
     </div>
