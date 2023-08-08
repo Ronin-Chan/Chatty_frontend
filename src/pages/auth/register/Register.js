@@ -1,9 +1,13 @@
-import '../register/Register.scss';
-import Button from '../../../components/button/Button';
-import Input from '../../../components/input/Input';
+import '@pages/auth/register/Register.scss';
+import Button from '@components/button/Button';
+import Input from '@components/input/Input';
 import { useEffect, useState } from 'react';
-import { Utils } from '../../../services/utils/utils.service';
-import { authService } from '../../../services/api/auth/auth.service';
+import { Utils } from '@services/utils/utils.service';
+import { authService } from '@services/api/auth/auth.service';
+import { useNavigate } from 'react-router-dom';
+import useLocalStorage from '@hooks/useLocalStorage';
+import useSessionStorage from '@hooks/useSessionStorage';
+import { useDispatch } from 'react-redux';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -14,6 +18,11 @@ const Register = () => {
   const [alertType, setAlertType] = useState('');
   const [hasError, setHasError] = useState('');
   const [user, setUser] = useState('');
+  const [setStoredUsername] = useLocalStorage('usernmae', 'set');
+  const [setLoggedIn] = useLocalStorage('loggedIn', 'set');
+  const [pageReload] = useSessionStorage('pageReload', 'set');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const registerUser = async (event) => {
     setLoding(true);
@@ -28,7 +37,10 @@ const Register = () => {
         avatarColor,
         avatarImage,
       });
-      setUser(result.data.user);
+
+      setLoggedIn(true);
+      setStoredUsername(username);
+      Utils.dispatch(result, pageReload, dispatch, setUser);
       setHasError(false);
       setAlertType('alert-success');
     } catch (error) {
@@ -42,10 +54,9 @@ const Register = () => {
   useEffect(() => {
     if (loading && !user) return;
     if (user) {
-      console.log('navigate to streams page');
-      setLoding(false);
+      navigate('/app/social/streams');
     }
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   return (
     <div className="auth-inner">

@@ -1,10 +1,10 @@
-import backGroundImg from '../../../assets/images/background.jpg';
-import Input from '../../../components/input/Input';
-import Button from '../../../components/button/Button';
+import backGroundImg from '@assets/images/background.jpg';
+import Input from '@components/input/Input';
+import Button from '@components/button/Button';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
-import '../reset-pwd/ResetPwd.scss';
-import { authService } from '../../../services/api/auth/auth.service';
+import '@pages/auth/reset-pwd/ResetPwd.scss';
+import { authService } from '@services/api/auth/auth.service';
 import { useState } from 'react';
 
 const ResetPwd = () => {
