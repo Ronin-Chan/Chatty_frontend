@@ -1,7 +1,7 @@
-import '../auth-tabs/AuthTabs.scss';
+import '@pages/auth/auth-tabs/AuthTabs.scss';
 import { useState } from 'react';
-import backGroundImg from '../../../assets/images/background.jpg';
-import { Login, Register } from '../../auth/index';
+import backGroundImg from '@assets/images/background.jpg';
+import { Login, Register } from '@pages/auth/index';
 
 const AuthTabs = () => {
   const [type, setType] = useState('Sign In');

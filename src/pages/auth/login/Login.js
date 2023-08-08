@@ -1,10 +1,14 @@
-import '../login/Login.scss';
-import Button from '../../../components/button/Button';
-import Input from '../../../components/input/Input';
+import '@pages/auth/login/Login.scss';
+import Button from '@components/button/Button';
+import Input from '@components/input/Input';
 import { FaArrowRight } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { authService } from '../../../services/api/auth/auth.service';
+import { authService } from '@services/api/auth/auth.service';
+import useLocalStorage from '@hooks/useLocalStorage';
+import useSessionStorage from '@hooks/useSessionStorage';
+import { useDispatch } from 'react-redux';
+import { Utils } from '@services/utils/utils.service';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -15,6 +19,11 @@ const Login = () => {
   const [hasError, setHasError] = useState('');
   const [user, setUser] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [setStoredLoggedIn] = useLocalStorage('loggedIn', 'set');
+  const [setStoredUsername] = useLocalStorage('username', 'set');
+  const [pageReload] = useSessionStorage('pageReload', 'set');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const LoginUser = async (event) => {
     setLoding(true);
@@ -24,25 +33,27 @@ const Login = () => {
         username,
         password,
       });
-      setUser(result.data.user);
-      setKeepLoggedIn(keepLoggedIn);
+
+      setStoredUsername(username);
+      setStoredLoggedIn(keepLoggedIn);
       setHasError(false);
       setAlertType('alert-success');
+      Utils.dispatchUser(result, pageReload, dispatch, setUser);
     } catch (error) {
+      console.log(error);
       setHasError(true);
       setAlertType('alert-error');
       setLoding(false);
-      setErrorMessage(error.response.data.message);
+      setErrorMessage(error?.response?.data.message);
     }
   };
 
   useEffect(() => {
     if (loading && !user) return;
     if (user) {
-      console.log('navigate to streams page from login page');
-      setLoding(false);
+      navigate('/app/social/streams');
     }
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   return (
     <div className="auth-inner">

@@ -1,11 +1,11 @@
-import '../login/Login.scss';
-import Button from '../../../components/button/Button';
-import Input from '../../../components/input/Input';
+import '@pages/auth/login/Login.scss';
+import Button from '@components/button/Button';
+import Input from '@components/input/Input';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import backGroundImg from '../../../assets/images/background.jpg';
-import '../forgot-pwd/ForgotPwd.scss';
-import { authService } from '../../../services/api/auth/auth.service';
+import backGroundImg from '@assets/images/background.jpg';
+import '@pages/auth/forgot-pwd/ForgotPwd.scss';
+import { authService } from '@services/api/auth/auth.service';
 import { useState } from 'react';
 
 const ForgotPwd = () => {
