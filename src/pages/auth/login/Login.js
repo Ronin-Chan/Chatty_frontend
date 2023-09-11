@@ -13,20 +13,20 @@ import { Utils } from '@services/utils/utils.service';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoding] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [alertType, setAlertType] = useState('');
   const [hasError, setHasError] = useState('');
   const [user, setUser] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
-  const [setStoredLoggedIn] = useLocalStorage('loggedIn', 'set');
+  const [setStoredLoggedIn] = useLocalStorage('keepLoggedIn', 'set');
   const [setStoredUsername] = useLocalStorage('username', 'set');
   const [pageReload] = useSessionStorage('pageReload', 'set');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const LoginUser = async (event) => {
-    setLoding(true);
+    setLoading(true);
     event.preventDefault();
     try {
       const result = await authService.signIn({
@@ -43,7 +43,7 @@ const Login = () => {
       console.log(error);
       setHasError(true);
       setAlertType('alert-error');
-      setLoding(false);
+      setLoading(false);
       setErrorMessage(error?.response?.data.message);
     }
   };

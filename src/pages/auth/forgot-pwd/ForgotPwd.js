@@ -3,7 +3,7 @@ import Button from '@components/button/Button';
 import Input from '@components/input/Input';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import backGroundImg from '@assets/images/background.jpg';
+// import backGroundImg from '@assets/images/background.jpg';
 import '@pages/auth/forgot-pwd/ForgotPwd.scss';
 import { authService } from '@services/api/auth/auth.service';
 import { useState } from 'react';
@@ -36,7 +36,7 @@ const ForgotPwd = () => {
   return (
     <div
       className="container-wrapper"
-      style={{ backgroundImage: `url(${backGroundImg})` }}
+      // style={{ backgroundImage: `url(${backGroundImg})` }}
     >
       <div className="environment">DEV</div>
       <div className="container-wrapper-auth">
