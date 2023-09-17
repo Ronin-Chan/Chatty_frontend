@@ -20,9 +20,23 @@ import useLocalStorage from '@hooks/useLocalStorage';
 import useSessionStorage from '@hooks/useSessionStorage';
 import { userService } from '@services/api/user/user.service';
 import HeaderSkeleton from '@components/header/HeaderSkeleton';
+import { notificationService } from '@services/api/notification/notification.service';
+import { NotificationUtils } from '@services/utils/notification-utils.service';
+import NotificationPreview from '@components/dialog/NotificationPreview';
+import { socketService } from '@services/socket/socket.service';
 
 const Header = () => {
   const [environment, setEnvironment] = useState('');
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationDialogContent, setNotificationDialogContent] = useState({
+    post: '',
+    imgUrl: '',
+    comment: '',
+    reaction: '',
+    senderName: '',
+  });
+
   const backgroundColor = `${
     environment === 'DEV' ? '#50b5ff' : environment === 'STG' ? '#e9710f' : ''
   }`;
@@ -46,8 +60,35 @@ const Header = () => {
     notificationRef,
     false,
   );
-  const onMarkAsRead = () => {};
-  const onDeleteNotification = () => {};
+
+  const onMarkAsRead = async (notification) => {
+    try {
+      NotificationUtils.markMessageAsRead(
+        notification?._id,
+        notification,
+        setNotificationDialogContent,
+      );
+    } catch (error) {
+      Utils.dispatchNotification(
+        error.response.data.message,
+        'error',
+        dispatch,
+      );
+    }
+  };
+
+  const onDeleteNotification = async (messageId) => {
+    try {
+      const response = await notificationService.deleteNotification(messageId);
+      Utils.dispatchNotifications(response.data.message, 'success', dispatch);
+    } catch (error) {
+      Utils.dispatchNotifications(
+        error.response.data.message,
+        'error',
+        dispatch,
+      );
+    }
+  };
 
   // setting
   const settingRef = useRef(null);
@@ -59,16 +100,24 @@ const Header = () => {
   const dispatch = useDispatch();
   const [deleteStorageUsername] = useLocalStorage('username', 'delete');
   const [deleteSessionPageReload] = useSessionStorage('pageReload', 'delete');
-  const [setLoggedIn] = useLocalStorage('loggedIn', 'set');
+  const [setLoggedIn] = useLocalStorage('keepLoggedIn', 'set');
   const onLogout = async () => {
-    Utils.clearStore({
-      dispatch,
-      deleteStorageUsername,
-      deleteSessionPageReload,
-      setLoggedIn,
-    });
-    await userService.userLogout();
-    navigate('/');
+    try {
+      Utils.clearStore({
+        dispatch,
+        deleteStorageUsername,
+        deleteSessionPageReload,
+        setLoggedIn,
+      });
+      await userService.userLogout();
+      navigate('/');
+    } catch (error) {
+      Utils.dispatchNotifications(
+        error.response.data.message,
+        'error',
+        dispatch,
+      );
+    }
   };
 
   const [setting, setSetting] = useState([]);
@@ -76,7 +125,39 @@ const Header = () => {
 
   useEffectOnce(() => {
     Utils.mapSettingsDropdownItems(setSetting);
+    getNotifications();
   });
+
+  const storedUsername = useLocalStorage('username', 'get');
+  // get notifications
+  const getNotifications = async () => {
+    try {
+      const response = await notificationService.getUserNotifications();
+      const mappedNotifications =
+        NotificationUtils.mapNotificationDropdownItems(
+          response.data.notifications,
+          setNotificationCount,
+        );
+      setNotifications(mappedNotifications);
+      socketService?.socket.emit('setup', { username: storedUsername });
+    } catch (error) {
+      Utils.dispatchNotification(
+        error.response.data.message,
+        'error',
+        dispatch,
+      );
+    }
+  };
+
+  useEffect(() => {
+    NotificationUtils.socketIONotification(
+      profile,
+      notifications,
+      setNotifications,
+      'header',
+      setNotificationCount,
+    );
+  }, [profile, notifications]);
 
   return (
     <>
@@ -93,6 +174,26 @@ const Header = () => {
                 openChatPage={openChatPage}
               />
             </div>
+          )}
+          {notificationDialogContent?.senderName && (
+            <NotificationPreview
+              title="Your post"
+              post={notificationDialogContent?.post}
+              imgUrl={notificationDialogContent?.imgUrl}
+              comment={notificationDialogContent?.comment}
+              reaction={notificationDialogContent?.reaction}
+              senderName={notificationDialogContent?.senderName}
+              secondButtonText="Close"
+              secondBtnHandler={() => {
+                setNotificationDialogContent({
+                  post: '',
+                  imgUrl: '',
+                  comment: '',
+                  reaction: '',
+                  senderName: '',
+                });
+              }}
+            />
           )}
           <div className="header-navbar">
             <div className="header-image" data-testid="header-image">
@@ -125,10 +226,14 @@ const Header = () => {
               >
                 <span className="header-list-name">
                   <FaRegBell className="header-list-icon" />
-                  <span
-                    className="bg-danger-dots dots"
-                    data-testid="notification-dots"
-                  ></span>
+                  {notificationCount > 0 && (
+                    <span
+                      className="bg-danger-dots dots"
+                      data-testid="notification-dots"
+                    >
+                      {notificationCount}
+                    </span>
+                  )}
                 </span>
                 {isNotificationActive && (
                   <ul className="dropdown-ul" ref={notificationRef}>
@@ -136,8 +241,8 @@ const Header = () => {
                       <Dropdown
                         height={300}
                         style={{ right: '250px', top: '20px' }}
-                        data={[]}
-                        notificationCount={0}
+                        data={notifications}
+                        notificationCount={notificationCount}
                         title="Notifications"
                         onMarkAsRead={onMarkAsRead}
                         onDeleteNotification={onDeleteNotification}

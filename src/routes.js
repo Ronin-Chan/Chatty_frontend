@@ -4,11 +4,13 @@ import ProtectedRoute from '@pages/ProtectedRoute';
 import Error from '@pages/error/Error';
 import { Suspense, lazy } from 'react';
 import StreamsSkeleton from '@pages/social/streams/StreamsSkeleton';
+import Notification from '@pages/social/notification/Notification';
+import NotificationSkeleton from '@pages/social/notification/NotificationSkeleton';
 
 const Social = lazy(() => import('@pages/social/Social'));
 const Streams = lazy(() => import('@pages/social/streams/Streams'));
-const Profile = lazy(() => import('@pages/social/Profile'));
-const People = lazy(() => import('@pages/social/People'));
+const Profile = lazy(() => import('@pages/social/profile/Profile'));
+const People = lazy(() => import('@pages/social/people/People'));
 
 export const AppRouter = () => {
   const elements = useRoutes([
@@ -91,8 +93,8 @@ export const AppRouter = () => {
         {
           path: 'notifications',
           element: (
-            <Suspense>
-              <Streams />
+            <Suspense fallback={<NotificationSkeleton />}>
+              <Notification />
             </Suspense>
           ),
         },
